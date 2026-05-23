@@ -317,14 +317,14 @@ function renderResult(approvals, walletAddr) {
   const overall = rows.length ? Math.max(...rows.map(r => r.score)) : 0;
   const overallTier = tierFor(overall);
   const tierClass = overallTier.toLowerCase();
-  const circ = 2 * Math.PI * 52;
+  const circ = 2 * Math.PI * 56;
   const dash = (overall / 100) * circ;
   const ringColor = { DANGER: '#ef4444', RISKY: '#ff6b35', CAUTION: '#eab308', SAFE: '#22c55e' }[overallTier];
   $('scoreCard').innerHTML = `
-    <div class="score-ring">
-      <svg width="120" height="120">
-        <circle class="bg" cx="60" cy="60" r="52"></circle>
-        <circle class="fg" cx="60" cy="60" r="52"
+    <div class="score-ring" style="color:${ringColor}">
+      <svg width="130" height="130">
+        <circle class="bg" cx="65" cy="65" r="56"></circle>
+        <circle class="fg" cx="65" cy="65" r="56"
           stroke="${ringColor}"
           stroke-dasharray="${dash} ${circ}"></circle>
       </svg>

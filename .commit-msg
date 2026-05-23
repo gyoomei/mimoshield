@@ -1,0 +1,42 @@
+fix: Vercel Web Interface Guidelines audit — 25 findings cleared
+
+Applied vercel-labs/web-interface-guidelines audit:
+
+Accessibility
+- aria-label on icon-only buttons (themeBtn, langBtn)
+- aria-label on wallet input (Wallet address or ENS name)
+- aria-live=polite on loading message
+- :focus-visible global styles
+- Removed maximum-scale=5 (preserve user zoom)
+
+Forms
+- Input: type=text, autocomplete=off, spellcheck=false,
+  autocapitalize=off, inputmode=text
+- Placeholder: 0x… or vitalik.eth (curly ellipsis)
+
+Animation
+- Replaced 13 occurrences of transition all with explicit property lists
+- Added prefers-reduced-motion scroll-behavior guard
+
+Typography
+- ... to … in Scanning approvals loading copy
+- font-variant-numeric tabular-nums on score-num and stat-box val
+- .tnum utility class
+
+Touch and layout
+- touch-action manipulation on body
+- webkit-tap-highlight-color transparent
+- overscroll-behavior-y none
+- env(safe-area-inset) padding
+- viewport viewport-fit cover
+
+Dark mode and theming
+- color-scheme dark on html
+- meta theme-color per-mode dark and light
+- Removed legacy single theme-color tag
+
+Navigation and i18n
+- scroll-margin-top 80px on section and id elements
+- translate no on MimoShield brand (3 occurrences)
+
+Cache buster app.js v=4. Re-audit 0 findings.

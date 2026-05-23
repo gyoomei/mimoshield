@@ -1,11 +1,12 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="dark">
+<html lang="en" data-theme="dark" style="color-scheme: dark">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=5">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0a0a0a" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#fafafa" media="(prefers-color-scheme: light)">
 <title>MimoShield — Wallet Permission Auditor · Free · No Key</title>
 <meta name="description" content="Audit every active token approval on your wallet across 5 EVM chains. 10-signal risk scoring. Free revoke. Powered by Xiaomi MiMo V2.5.">
-<meta name="theme-color" content="#06080f">
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -43,6 +44,8 @@
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
 html { scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+section, [id] { scroll-margin-top: 80px; }
 body {
   font-family: 'Geist', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
   background: var(--bg); color: var(--text);
@@ -50,7 +53,14 @@ body {
   font-feature-settings: 'cv11', 'ss01', 'ss03';
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  overscroll-behavior-y: none;
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
 }
+.tnum { font-variant-numeric: tabular-nums; }
+:focus-visible { outline: 2px solid var(--acc); outline-offset: 3px; border-radius: 6px; }
 body::before {
   content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 0;
   background:
@@ -137,7 +147,7 @@ nav {
   padding: 7px 12px; border-radius: 9px; background: var(--surface);
   border: 1px solid var(--line); color: var(--text-2);
   font-family: inherit; font-size: .82rem; font-weight: 500; cursor: pointer;
-  transition: all .2s var(--ease);
+  transition: transform .2s var(--ease), box-shadow .2s var(--ease), border-color .2s var(--ease), background .2s var(--ease), opacity .2s var(--ease), color .2s var(--ease);
 }
 .nav-btn:hover { background: var(--surface-2); color: var(--text); border-color: var(--line-2); }
 
@@ -182,7 +192,7 @@ nav {
   backdrop-filter: blur(12px) saturate(1.2);
   border: 1px solid rgba(255, 255, 255, .08); font-size: .85rem; color: var(--text-2);
   display: inline-flex; align-items: center; gap: 8px;
-  transition: all .25s var(--ease);
+  transition: transform .25s var(--ease), box-shadow .25s var(--ease), border-color .25s var(--ease), background .25s var(--ease), opacity .25s var(--ease), color .25s var(--ease);
 }
 .hero-stat:hover { transform: translateY(-2px); border-color: rgba(255, 107, 53, .3); }
 .hero-stat b { color: var(--acc); font-family: 'Geist Mono', monospace; font-weight: 700; }
@@ -216,7 +226,7 @@ nav {
   padding: 7px 13px; border-radius: 9px; background: var(--surface-2);
   border: 1px solid var(--line); color: var(--text-2);
   font-family: inherit; font-size: .82rem; font-weight: 500; cursor: pointer;
-  transition: all .15s var(--ease); display: inline-flex; align-items: center; gap: 6px;
+  transition: transform .15s var(--ease), box-shadow .15s var(--ease), border-color .15s var(--ease), background .15s var(--ease), opacity .15s var(--ease), color .15s var(--ease); display: inline-flex; align-items: center; gap: 6px;
 }
 .chain-btn:hover { color: var(--text); border-color: var(--line-2); }
 .chain-btn.active {
@@ -224,18 +234,19 @@ nav {
   box-shadow: 0 4px 14px rgba(255, 107, 53, .3);
 }
 .input-row { display: flex; gap: 10px; }
-.input-row input {
-  flex: 1; padding: 14px 18px; border-radius: 12px;
-  background: var(--bg-2); border: 1.5px solid var(--line-2);
-  color: var(--text); font-family: 'Geist Mono', ui-monospace, monospace;
-  font-size: .92rem; outline: none; transition: all .2s var(--ease);
+.input-wallet {
+  flex: 1; padding: 14px 16px; border-radius: 12px;
+  background: var(--bg-2); border: 1px solid var(--line);
+  color: var(--text); font-family: 'Geist Mono', monospace;
+  font-size: .92rem; outline: none;
+  font-variant-numeric: tabular-nums;
 }
 .input-row input:focus { border-color: var(--acc); box-shadow: 0 0 0 4px rgba(255, 107, 53, .1); }
 .input-row input::placeholder { color: var(--dim); }
 .btn-primary {
   padding: 14px 24px; border-radius: 12px; background: var(--grad-mimo);
   border: none; color: #fff; font-family: inherit; font-weight: 700;
-  font-size: .9rem; cursor: pointer; transition: all .25s var(--ease);
+  font-size: .9rem; cursor: pointer; transition: transform .25s var(--ease), box-shadow .25s var(--ease), border-color .25s var(--ease), background .25s var(--ease), opacity .25s var(--ease), color .25s var(--ease);
   position: relative; overflow: hidden;
   box-shadow: 0 8px 24px rgba(255, 107, 53, .32), 0 0 32px rgba(139, 92, 246, .15);
   white-space: nowrap;
@@ -257,7 +268,7 @@ nav {
   padding: 5px 11px; border-radius: 7px; background: var(--surface-2);
   border: 1px solid var(--line); color: var(--text-2);
   font-family: 'Geist Mono', monospace; font-size: .74rem; cursor: pointer;
-  transition: all .15s var(--ease);
+  transition: transform .15s var(--ease), box-shadow .15s var(--ease), border-color .15s var(--ease), background .15s var(--ease), opacity .15s var(--ease), color .15s var(--ease);
 }
 .example-btn:hover { background: rgba(255, 107, 53, .1); color: var(--acc); border-color: rgba(255, 107, 53, .3); }
 
@@ -288,7 +299,7 @@ nav {
   padding: 20px 18px; border-radius: var(--r-lg);
   background: linear-gradient(160deg, rgba(255,255,255,.04), rgba(255,255,255,.012));
   backdrop-filter: blur(14px); border: 1px solid rgba(255, 255, 255, .07);
-  position: relative; overflow: hidden; transition: all .25s var(--ease);
+  position: relative; overflow: hidden; transition: transform .25s var(--ease), box-shadow .25s var(--ease), border-color .25s var(--ease), background .25s var(--ease), opacity .25s var(--ease), color .25s var(--ease);
 }
 .stat-box::before {
   content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
@@ -304,7 +315,8 @@ nav {
 }
 .stat-box .val {
   font-family: 'Geist Mono', monospace; font-size: 1.6rem;
-  font-weight: 700; color: var(--text); line-height: 1.1;
+  font-weight: 700; letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
 }
 .stat-box.danger { border-color: rgba(239, 68, 68, .35); }
 .stat-box.danger .val { color: var(--red); }
@@ -358,8 +370,9 @@ nav {
 .score-ring .bg { stroke: var(--surface-3); }
 .score-ring .fg { transition: stroke-dasharray 1.2s var(--ease), stroke 1.2s var(--ease); }
 .score-num {
-  position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
-  flex-direction: column; gap: 2px;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  position: absolute; inset: 0; pointer-events: none; gap: 2px;
+  font-variant-numeric: tabular-nums;
 }
 .score-num strong { font-family: 'Geist Mono', monospace; font-size: 2rem; font-weight: 700; line-height: 1; }
 .score-num .out { font-size: .7rem; color: var(--muted); }
@@ -395,7 +408,7 @@ nav {
   background: linear-gradient(160deg, rgba(255,255,255,.045), rgba(255,255,255,.012));
   backdrop-filter: blur(14px); border: 1px solid rgba(255, 255, 255, .06);
   display: grid; grid-template-columns: 1fr auto auto; gap: 16px; align-items: center;
-  transition: all .25s var(--ease); position: relative; overflow: hidden;
+  transition: transform .25s var(--ease), box-shadow .25s var(--ease), border-color .25s var(--ease), background .25s var(--ease), opacity .25s var(--ease), color .25s var(--ease); position: relative; overflow: hidden;
   box-shadow: 0 4px 16px rgba(0, 0, 0, .15);
 }
 .approval::before {
@@ -468,7 +481,7 @@ nav {
   background: rgba(255, 107, 53, .12); color: var(--acc);
   border: 1px solid rgba(255, 107, 53, .35);
   font-family: inherit; font-size: .8rem; font-weight: 600;
-  text-decoration: none; cursor: pointer; transition: all .2s var(--ease);
+  text-decoration: none; cursor: pointer; transition: transform .2s var(--ease), box-shadow .2s var(--ease), border-color .2s var(--ease), background .2s var(--ease), opacity .2s var(--ease), color .2s var(--ease);
   display: inline-flex; align-items: center; gap: 4px; white-space: nowrap;
 }
 .btn-revoke:hover { background: rgba(255, 107, 53, .2); color: var(--text); transform: translateY(-1px); }
@@ -485,7 +498,7 @@ nav {
   padding: 8px 12px; border-radius: 9px; background: var(--surface-2);
   color: var(--text-2); border: 1px solid var(--line);
   font-size: .8rem; text-decoration: none;
-  transition: all .15s var(--ease);
+  transition: transform .15s var(--ease), box-shadow .15s var(--ease), border-color .15s var(--ease), background .15s var(--ease), opacity .15s var(--ease), color .15s var(--ease);
 }
 .btn-link:hover { background: var(--surface-3); color: var(--text); }
 
@@ -563,7 +576,7 @@ nav {
   padding: 24px; border-radius: var(--r-lg);
   background: linear-gradient(160deg, rgba(255,255,255,.04), rgba(255,255,255,.012));
   backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, .07);
-  transition: all .25s var(--ease); position: relative; overflow: hidden;
+  transition: transform .25s var(--ease), box-shadow .25s var(--ease), border-color .25s var(--ease), background .25s var(--ease), opacity .25s var(--ease), color .25s var(--ease); position: relative; overflow: hidden;
 }
 .how-step::before {
   content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
@@ -599,7 +612,7 @@ nav {
   background: linear-gradient(160deg, rgba(255,255,255,.04), rgba(255,255,255,.012));
   backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, .07);
   display: flex; align-items: center; gap: 14px;
-  transition: all .25s var(--ease);
+  transition: transform .25s var(--ease), box-shadow .25s var(--ease), border-color .25s var(--ease), background .25s var(--ease), opacity .25s var(--ease), color .25s var(--ease);
 }
 .rubric-card:hover { transform: translateY(-2px); border-color: rgba(255, 255, 255, .14); box-shadow: 0 8px 24px rgba(0, 0, 0, .2); }
 [data-theme="light"] .rubric-card { background: var(--surface); }
@@ -623,7 +636,7 @@ footer {
 }
 footer a {
   color: var(--text-2); font-weight: 500; text-decoration: none;
-  border-bottom: 1px dashed var(--line-2); transition: all .2s var(--ease);
+  border-bottom: 1px dashed var(--line-2); transition: transform .2s var(--ease), box-shadow .2s var(--ease), border-color .2s var(--ease), background .2s var(--ease), opacity .2s var(--ease), color .2s var(--ease);
 }
 footer a:hover { color: var(--acc); border-color: var(--acc); }
 .footer-brand {
@@ -643,11 +656,11 @@ footer a:hover { color: var(--acc); border-color: var(--acc); }
   <div class="nav-inner">
     <a href="#" class="nav-logo">
       <span class="logo-icon">🛡️</span>
-      <span>MimoShield</span>
+      <span translate="no">MimoShield</span>
     </a>
     <div class="nav-actions">
-      <button class="nav-btn" id="langBtn">🌐 ID</button>
-      <button class="nav-btn" id="themeBtn">☀️</button>
+<button class="nav-btn" id="langBtn" onclick="toggleLang()" aria-label="Switch to Indonesian" title="Switch language">🌐 ID</button>
+      <button class="nav-btn" id="themeBtn" aria-label="Toggle theme" title="Toggle theme">☀️</button>
     </div>
   </div>
 </nav>
@@ -667,7 +680,7 @@ footer a:hover { color: var(--acc); border-color: var(--acc); }
     <div class="input-card">
       <div class="chains" id="chains"></div>
       <div class="input-row">
-        <input id="addrIn" placeholder="0x... or vitalik.eth" autocomplete="off">
+        <input id="addrIn" type="text" placeholder="0x… or vitalik.eth" autocomplete="off" spellcheck="false" autocapitalize="off" inputmode="text" aria-label="Wallet address or ENS name">
         <button class="btn-primary" id="scanBtn" data-i18n="scan">Scan wallet</button>
       </div>
       <div class="examples">
@@ -685,7 +698,7 @@ footer a:hover { color: var(--acc); border-color: var(--acc); }
   <div class="container">
     <div class="loading" id="loadBox">
       <div class="loading-dots"><span></span><span></span><span></span></div>
-      <div class="loading-msg" id="loadMsg">Scanning approvals...</div>
+      <div class="loading-msg" id="loadMsg" aria-live="polite">Scanning approvals…</div>
     </div>
 
     <div class="result" id="resultBox">
@@ -752,12 +765,12 @@ footer a:hover { color: var(--acc); border-color: var(--acc); }
 
 <footer>
   <div class="container">
-    <div><span class="footer-brand">MimoShield</span> · Powered by <a href="https://gopluslabs.io" target="_blank" rel="noopener">GoPlus Security API</a> + <a href="https://text.pollinations.ai" target="_blank" rel="noopener">Pollinations.ai</a></div>
+    <div><span class="footer-brand" translate="no">MimoShield</span> · Powered by <a href="https://gopluslabs.io" target="_blank" rel="noopener">GoPlus Security API</a> + <a href="https://text.pollinations.ai" target="_blank" rel="noopener">Pollinations.ai</a></div>
     <div>Built for <a href="https://100t.xiaomimimo.com/" target="_blank" rel="noopener">Xiaomi MiMo Orbit 100T</a> · <a href="https://github.com/gyoomei/mimoshield" target="_blank" rel="noopener">Source on GitHub</a></div>
     <div style="margin-top:8px;font-size:.78rem;color:var(--dim)" data-i18n="dis">⚠️ Read-only audit. We never ask for keys or signatures. Revocations happen in your own wallet.</div>
   </div>
 </footer>
 
-<script src="app.js?v=3"></script>
+<script src="app.js?v=4"></script>
 </body>
 </html>

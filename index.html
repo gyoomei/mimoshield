@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=5">
+<title>MimoShield — Wallet Permission Auditor · Free · No Key</title>
+<meta name="description" content="Audit every active token approval on your wallet across 5 EVM chains. 10-signal risk scoring. Free revoke. Powered by Xiaomi MiMo V2.5.">
+<meta name="theme-color" content="#06080f">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700;800&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+<style>
+:root {
+  --bg: #06080f; --bg-2: #0a0d18;
+  --surface: rgba(16, 20, 32, .65);
+  --surface-2: rgba(22, 27, 42, .75);
+  --surface-3: rgba(30, 36, 54, .85);
+  --line: rgba(255, 255, 255, .07);
+  --line-2: rgba(255, 255, 255, .14);
+  --text: #f4f5fa; --text-2: #c5c9d4;
+  --muted: #8189a1; --dim: #5b6275;
+  --acc: #ff6b35; --acc-2: #ff3d0a;
+  --purple: #8b5cf6; --blue: #3b82f6; --pink: #ec4899;
+  --green: #22c55e; --yellow: #eab308; --red: #ef4444;
+  --grad-mimo: linear-gradient(135deg, #ff6b35 0%, #ff3d0a 35%, #8b5cf6 70%, #3b82f6 100%);
+  --grad-glass: linear-gradient(180deg, rgba(255,255,255,.04) 0%, rgba(255,255,255,.01) 100%);
+  --r: 14px; --r-lg: 18px; --r-xl: 24px;
+  --ease: cubic-bezier(.4, 0, .2, 1);
+}
+[data-theme="light"] {
+  --bg: #faf8f3; --bg-2: #fff;
+  --surface: rgba(255, 255, 255, .8);
+  --surface-2: rgba(248, 246, 240, .9);
+  --surface-3: rgba(240, 236, 226, .95);
+  --line: rgba(0, 0, 0, .08);
+  --line-2: rgba(0, 0, 0, .14);
+  --text: #0a0a14; --text-2: #2a2d3a;
+  --muted: #5a5e6e; --dim: #8a8e9c;
+  --grad-glass: linear-gradient(180deg, rgba(0,0,0,.02) 0%, rgba(0,0,0,.005) 100%);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: 'Geist', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  background: var(--bg); color: var(--text);
+  line-height: 1.6; min-height: 100vh; overflow-x: hidden;
+  font-feature-settings: 'cv11', 'ss01', 'ss03';
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+body::before {
+  content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 0;
+  background:
+    radial-gradient(800px 400px at 15% -10%, rgba(255, 107, 53, .12), transparent 60%),
+    radial-gradient(700px 500px at 85% 10%, rgba(139, 92, 246, .1), transparent 60%),
+    radial-gradient(900px 600px at 50% 110%, rgba(59, 130, 246, .08), transparent 60%);
+  animation: drift 22s ease-in-out infinite alternate;
+}
+body::after {
+  content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 0;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, .015) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, .015) 1px, transparent 1px);
+  background-size: 56px 56px;
+  mask-image: radial-gradient(ellipse 80% 60% at 50% 40%, #000 30%, transparent 80%);
+  -webkit-mask-image: radial-gradient(ellipse 80% 60% at 50% 40%, #000 30%, transparent 80%);
+}
+[data-theme="light"] body::after { display: none; }
+@keyframes drift {
+  0% { transform: translate(0, 0) scale(1); }
+  100% { transform: translate(-30px, -20px) scale(1.05); }
+}
+::selection { background: var(--acc); color: #fff; }
+.container { max-width: 1200px; margin: 0 auto; padding: 0 24px; position: relative; z-index: 1; }
+
+/* NAV */
+nav {
+  position: sticky; top: 0; z-index: 100;
+  background: rgba(6, 8, 15, .72);
+  backdrop-filter: blur(20px) saturate(1.4);
+  -webkit-backdrop-filter: blur(20px) saturate(1.4);
+  border-bottom: 1px solid var(--line);
+}
+[data-theme="light"] nav { background: rgba(250, 248, 243, .85); }
+.nav-inner {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 24px; max-width: 1200px; margin: 0 auto;
+}
+.nav-logo {
+  display: flex; align-items: center; gap: 10px;
+  font-weight: 700; font-size: 1.05rem; letter-spacing: -0.02em;
+  text-decoration: none; color: var(--text);
+}
+.logo-icon {
+  width: 34px; height: 34px; border-radius: 10px;
+  background: var(--grad-mimo);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.05rem; box-shadow: 0 4px 16px rgba(255, 107, 53, .35);
+}
+.nav-actions { display: flex; align-items: center; gap: 8px; }
+.nav-btn {
+  padding: 7px 12px; border-radius: 9px; background: var(--surface);
+  border: 1px solid var(--line); color: var(--text-2);
+  font-family: inherit; font-size: .82rem; font-weight: 500; cursor: pointer;
+  transition: all .2s var(--ease);
+}
+.nav-btn:hover { background: var(--surface-2); color: var(--text); border-color: var(--line-2); }
+
+/* HERO */
+.hero { padding: clamp(56px, 9vw, 90px) 0 clamp(40px, 6vw, 60px); text-align: center; position: relative; }
+.hero-badge {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 7px 16px; border-radius: 999px;
+  background: rgba(255, 107, 53, .1); border: 1px solid rgba(255, 107, 53, .3);
+  color: var(--acc); font-size: .75rem; font-weight: 600;
+  letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 26px;
+  font-family: 'Geist Mono', ui-monospace, monospace;
+}
+.hero-badge::before {
+  content: ''; width: 6px; height: 6px; border-radius: 50%;
+  background: var(--acc); box-shadow: 0 0 10px var(--acc);
+  animation: pulse 2s ease-in-out infinite;
+}
+@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .4; } }
+.hero h1 {
+  font-size: clamp(2rem, 6.5vw, 4rem); font-weight: 800;
+  letter-spacing: -0.045em; line-height: 1.05; margin-bottom: 22px;
+  max-width: 920px; margin-left: auto; margin-right: auto;
+}
+.hero h1 .grad {
+  background: var(--grad-mimo); background-size: 200% auto;
+  -webkit-background-clip: text; background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: shine 6s ease-in-out infinite;
+}
+@keyframes shine { 0%, 100% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } }
+.hero p.lead {
+  font-size: clamp(1rem, 1.6vw, 1.18rem); color: var(--text-2);
+  max-width: 720px; margin: 0 auto 32px; line-height: 1.65;
+}
+.hero-stats {
+  display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; margin-bottom: 40px;
+}
+.hero-stat {
+  padding: 10px 16px; border-radius: 12px;
+  background: var(--surface); border: 1px solid var(--line);
+  backdrop-filter: blur(8px); font-size: .82rem; color: var(--text-2);
+  display: inline-flex; align-items: center; gap: 8px;
+}
+.hero-stat b { color: var(--acc); font-family: 'Geist Mono', monospace; font-weight: 700; }
+
+/* INPUT CARD */
+.input-card {
+  max-width: 760px; margin: 0 auto;
+  background: var(--surface); backdrop-filter: blur(20px) saturate(1.2);
+  -webkit-backdrop-filter: blur(20px) saturate(1.2);
+  border: 1px solid var(--line); border-radius: var(--r-xl);
+  padding: 24px; position: relative;
+}
+.input-card::before {
+  content: ''; position: absolute; inset: -1px; border-radius: var(--r-xl);
+  padding: 1px; background: linear-gradient(135deg, rgba(255,107,53,.4), transparent 50%, rgba(139,92,246,.3));
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor; mask-composite: exclude;
+  pointer-events: none;
+}
+.chains {
+  display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px;
+}
+.chain-btn {
+  padding: 7px 13px; border-radius: 9px; background: var(--surface-2);
+  border: 1px solid var(--line); color: var(--text-2);
+  font-family: inherit; font-size: .82rem; font-weight: 500; cursor: pointer;
+  transition: all .15s var(--ease); display: inline-flex; align-items: center; gap: 6px;
+}
+.chain-btn:hover { color: var(--text); border-color: var(--line-2); }
+.chain-btn.active {
+  background: var(--grad-mimo); color: #fff; border-color: transparent; font-weight: 600;
+  box-shadow: 0 4px 14px rgba(255, 107, 53, .3);
+}
+.input-row { display: flex; gap: 10px; }
+.input-row input {
+  flex: 1; padding: 14px 18px; border-radius: 12px;
+  background: var(--bg-2); border: 1.5px solid var(--line-2);
+  color: var(--text); font-family: 'Geist Mono', ui-monospace, monospace;
+  font-size: .92rem; outline: none; transition: all .2s var(--ease);
+}
+.input-row input:focus { border-color: var(--acc); box-shadow: 0 0 0 4px rgba(255, 107, 53, .1); }
+.input-row input::placeholder { color: var(--dim); }
+.btn-primary {
+  padding: 14px 24px; border-radius: 12px; background: var(--grad-mimo);
+  border: none; color: #fff; font-family: inherit; font-weight: 700;
+  font-size: .9rem; cursor: pointer; transition: all .25s var(--ease);
+  position: relative; overflow: hidden;
+  box-shadow: 0 8px 24px rgba(255, 107, 53, .32);
+  white-space: nowrap;
+}
+.btn-primary::before {
+  content: ''; position: absolute; inset: 0;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,.25), transparent);
+  transform: translateX(-100%); transition: transform .7s var(--ease);
+}
+.btn-primary:hover { transform: translateY(-2px); box-shadow: 0 14px 36px rgba(255, 107, 53, .5); }
+.btn-primary:hover::before { transform: translateX(100%); }
+.btn-primary:disabled { opacity: .6; cursor: not-allowed; }
+.examples {
+  display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px;
+  font-size: .78rem; color: var(--muted);
+}
+.examples b { font-family: 'Geist Mono', monospace; color: var(--text-2); margin-right: 6px; }
+.example-btn {
+  padding: 5px 11px; border-radius: 7px; background: var(--surface-2);
+  border: 1px solid var(--line); color: var(--text-2);
+  font-family: 'Geist Mono', monospace; font-size: .74rem; cursor: pointer;
+  transition: all .15s var(--ease);
+}
+.example-btn:hover { background: rgba(255, 107, 53, .1); color: var(--acc); border-color: rgba(255, 107, 53, .3); }
+
+/* LOADING */
+.loading { display: none; text-align: center; padding: 40px 20px; }
+.loading.on { display: block; }
+.loading-dots {
+  display: inline-flex; gap: 6px; margin-bottom: 14px;
+}
+.loading-dots span {
+  width: 8px; height: 8px; border-radius: 50%; background: var(--acc);
+  animation: bounce 1.4s ease-in-out infinite both;
+}
+.loading-dots span:nth-child(2) { animation-delay: -0.16s; }
+.loading-dots span:nth-child(3) { animation-delay: -0.32s; }
+@keyframes bounce { 0%, 80%, 100% { transform: scale(0); } 40% { transform: scale(1); } }
+.loading-msg { color: var(--text-2); font-size: .92rem; font-family: 'Geist Mono', monospace; }
+
+/* RESULT */
+.result { display: none; padding-top: 32px; }
+.result.on { display: block; }
+.summary {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px;
+  margin-bottom: 28px;
+}
+@media (max-width: 720px) { .summary { grid-template-columns: repeat(2, 1fr); } }
+.stat-box {
+  padding: 18px 16px; border-radius: var(--r-lg);
+  background: var(--surface); border: 1px solid var(--line);
+  backdrop-filter: blur(12px); position: relative; overflow: hidden;
+}
+.stat-box .lbl {
+  font-size: .72rem; color: var(--muted); text-transform: uppercase;
+  letter-spacing: 0.08em; margin-bottom: 8px; font-weight: 600;
+}
+.stat-box .val {
+  font-family: 'Geist Mono', monospace; font-size: 1.6rem;
+  font-weight: 700; color: var(--text); line-height: 1.1;
+}
+.stat-box.danger { border-color: rgba(239, 68, 68, .35); }
+.stat-box.danger .val { color: var(--red); }
+.stat-box.caution { border-color: rgba(234, 179, 8, .35); }
+.stat-box.caution .val { color: var(--yellow); }
+.stat-box.safe { border-color: rgba(34, 197, 94, .35); }
+.stat-box.safe .val { color: var(--green); }
+
+.score-card {
+  display: flex; align-items: center; gap: 24px;
+  padding: 24px; margin-bottom: 28px;
+  background: var(--surface); border: 1px solid var(--line);
+  backdrop-filter: blur(20px) saturate(1.2);
+  border-radius: var(--r-xl); position: relative; overflow: hidden;
+}
+.score-ring {
+  width: 120px; height: 120px; flex-shrink: 0; position: relative;
+}
+.score-ring svg { transform: rotate(-90deg); }
+.score-ring circle { fill: none; stroke-width: 8; stroke-linecap: round; }
+.score-ring .bg { stroke: var(--surface-3); }
+.score-ring .fg { transition: stroke-dasharray 1.2s var(--ease), stroke 1.2s var(--ease); }
+.score-num {
+  position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+  flex-direction: column; gap: 2px;
+}
+.score-num strong { font-family: 'Geist Mono', monospace; font-size: 2rem; font-weight: 700; line-height: 1; }
+.score-num .out { font-size: .7rem; color: var(--muted); }
+.score-info { flex: 1; }
+.score-tier {
+  display: inline-block; padding: 5px 12px; border-radius: 8px;
+  font-family: 'Geist Mono', monospace; font-size: .78rem;
+  font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
+  margin-bottom: 12px;
+}
+.score-tier.safe { background: rgba(34, 197, 94, .15); color: var(--green); border: 1px solid rgba(34, 197, 94, .3); }
+.score-tier.caution { background: rgba(234, 179, 8, .15); color: var(--yellow); border: 1px solid rgba(234, 179, 8, .3); }
+.score-tier.risky { background: rgba(255, 107, 53, .15); color: var(--acc); border: 1px solid rgba(255, 107, 53, .3); }
+.score-tier.danger { background: rgba(239, 68, 68, .15); color: var(--red); border: 1px solid rgba(239, 68, 68, .3); }
+.score-msg { color: var(--text-2); font-size: .94rem; line-height: 1.6; }
+.score-msg b { color: var(--text); font-weight: 600; }
+
+.approvals-head {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 14px; padding: 0 4px;
+}
+.approvals-head h3 {
+  font-size: 1.05rem; font-weight: 700; letter-spacing: -0.02em;
+}
+.approvals-head .count {
+  font-family: 'Geist Mono', monospace; font-size: .82rem;
+  color: var(--muted); padding: 4px 10px; border-radius: 6px;
+  background: var(--surface-2); border: 1px solid var(--line);
+}
+.approvals { display: flex; flex-direction: column; gap: 10px; }
+.approval {
+  padding: 16px 18px; border-radius: var(--r-lg);
+  background: var(--surface); border: 1px solid var(--line);
+  backdrop-filter: blur(8px);
+  display: grid; grid-template-columns: 1fr auto auto; gap: 16px; align-items: center;
+  transition: all .2s var(--ease); position: relative;
+}
+.approval:hover { background: var(--surface-2); border-color: var(--line-2); transform: translateY(-1px); }
+.approval.tier-DANGER { border-left: 3px solid var(--red); }
+.approval.tier-RISKY { border-left: 3px solid var(--acc); }
+.approval.tier-CAUTION { border-left: 3px solid var(--yellow); }
+.approval.tier-SAFE { border-left: 3px solid var(--green); }
+.appr-main { min-width: 0; }
+.appr-token {
+  display: flex; align-items: center; gap: 10px; margin-bottom: 6px;
+}
+.appr-token .name {
+  font-weight: 700; font-size: .98rem; color: var(--text);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 250px;
+}
+.appr-token .symbol {
+  font-family: 'Geist Mono', monospace; font-size: .76rem;
+  color: var(--muted); padding: 2px 8px; border-radius: 5px;
+  background: var(--surface-3); border: 1px solid var(--line);
+}
+.appr-meta { font-size: .82rem; color: var(--text-2); line-height: 1.6; }
+.appr-meta .spender {
+  font-family: 'Geist Mono', monospace; color: var(--muted);
+  font-size: .78rem;
+}
+.appr-meta .spender b { color: var(--text-2); font-weight: 500; }
+.appr-meta .amount {
+  display: inline-block; padding: 2px 8px; border-radius: 5px;
+  background: rgba(239, 68, 68, .12); color: var(--red);
+  font-family: 'Geist Mono', monospace; font-size: .76rem; font-weight: 600;
+  margin-right: 6px;
+}
+.appr-meta .amount.normal { background: rgba(34, 197, 94, .12); color: var(--green); }
+.appr-meta .age { color: var(--muted); font-size: .76rem; }
+.appr-flags {
+  display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px;
+}
+.flag {
+  font-size: .7rem; padding: 2px 7px; border-radius: 4px;
+  font-family: 'Geist Mono', monospace; font-weight: 600;
+  letter-spacing: 0.02em; white-space: nowrap;
+}
+.flag.crit { background: rgba(239, 68, 68, .15); color: var(--red); }
+.flag.high { background: rgba(255, 107, 53, .15); color: var(--acc); }
+.flag.med { background: rgba(234, 179, 8, .15); color: var(--yellow); }
+.flag.low { background: rgba(139, 92, 246, .15); color: var(--purple); }
+.appr-score {
+  text-align: right; font-family: 'Geist Mono', monospace;
+  flex-shrink: 0;
+}
+.appr-score .num { font-size: 1.6rem; font-weight: 700; line-height: 1; }
+.appr-score.tier-DANGER .num { color: var(--red); }
+.appr-score.tier-RISKY .num { color: var(--acc); }
+.appr-score.tier-CAUTION .num { color: var(--yellow); }
+.appr-score.tier-SAFE .num { color: var(--green); }
+.appr-score .out { font-size: .65rem; color: var(--muted); margin-top: 2px; }
+.appr-actions { display: flex; gap: 8px; flex-shrink: 0; }
+.btn-revoke {
+  padding: 8px 14px; border-radius: 9px;
+  background: rgba(255, 107, 53, .12); color: var(--acc);
+  border: 1px solid rgba(255, 107, 53, .35);
+  font-family: inherit; font-size: .8rem; font-weight: 600;
+  text-decoration: none; cursor: pointer; transition: all .2s var(--ease);
+  display: inline-flex; align-items: center; gap: 4px; white-space: nowrap;
+}
+.btn-revoke:hover { background: rgba(255, 107, 53, .2); color: var(--text); transform: translateY(-1px); }
+.btn-revoke.ghost {
+  background: transparent; color: var(--muted);
+  border-color: var(--line);
+}
+.btn-revoke.ghost:hover { background: var(--surface-2); color: var(--text-2); border-color: var(--line-2); transform: none; }
+.addr-tail {
+  font-family: 'Geist Mono', ui-monospace, monospace; font-size: .76rem;
+  color: var(--muted); margin-left: 6px;
+}
+.btn-link {
+  padding: 8px 12px; border-radius: 9px; background: var(--surface-2);
+  color: var(--text-2); border: 1px solid var(--line);
+  font-size: .8rem; text-decoration: none;
+  transition: all .15s var(--ease);
+}
+.btn-link:hover { background: var(--surface-3); color: var(--text); }
+
+@media (max-width: 720px) {
+  .approval { grid-template-columns: 1fr; gap: 12px; }
+  .appr-score { text-align: left; display: flex; align-items: center; gap: 14px; }
+  .appr-score .out { margin-top: 0; }
+  .appr-actions { width: 100%; }
+  .btn-revoke, .btn-link { flex: 1; justify-content: center; }
+}
+
+/* MIMO INSIGHT */
+.mimo-insight {
+  margin-top: 32px; padding: 24px;
+  background:
+    linear-gradient(135deg, rgba(255, 107, 53, .08) 0%, rgba(139, 92, 246, .06) 50%, rgba(59, 130, 246, .04) 100%),
+    var(--surface);
+  border: 1px solid var(--line); border-radius: var(--r-xl);
+  position: relative; overflow: hidden;
+}
+.mimo-insight h3 {
+  font-size: 1rem; font-weight: 700; letter-spacing: -0.01em;
+  margin-bottom: 12px; display: flex; align-items: center; gap: 10px;
+}
+.mimo-insight h3::before {
+  content: ''; width: 22px; height: 22px; border-radius: 7px;
+  background: var(--grad-mimo); box-shadow: 0 2px 8px rgba(255, 107, 53, .3);
+}
+.mimo-insight p {
+  color: var(--text-2); line-height: 1.7; font-size: .92rem;
+  margin-bottom: 8px;
+}
+.mimo-insight p b { color: var(--acc); font-weight: 700; }
+
+/* ERROR */
+.error {
+  padding: 14px 18px; border-radius: 12px; margin: 16px 0;
+  background: rgba(239, 68, 68, .08); border: 1px solid rgba(239, 68, 68, .25);
+  color: var(--red); font-size: .88rem; display: none;
+}
+.error.on { display: block; }
+
+/* HOW */
+.how { padding: 60px 0 40px; }
+.how h2 {
+  font-size: clamp(1.5rem, 3vw, 2.2rem); font-weight: 800;
+  letter-spacing: -0.035em; margin-bottom: 32px; text-align: center;
+}
+.how-grid {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px;
+}
+@media (max-width: 900px) { .how-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 480px) { .how-grid { grid-template-columns: 1fr; } }
+.how-step {
+  padding: 22px; border-radius: var(--r-lg);
+  background: var(--surface); border: 1px solid var(--line);
+  backdrop-filter: blur(12px); transition: all .2s var(--ease);
+}
+.how-step:hover { transform: translateY(-2px); border-color: var(--line-2); }
+.how-step .num {
+  width: 34px; height: 34px; border-radius: 9px;
+  background: var(--surface-3); border: 1px solid var(--line);
+  display: inline-flex; align-items: center; justify-content: center;
+  font-family: 'Geist Mono', monospace; font-weight: 700;
+  font-size: .9rem; color: var(--acc); margin-bottom: 14px;
+}
+.how-step h4 { font-size: 1rem; font-weight: 700; margin-bottom: 8px; }
+.how-step p { color: var(--text-2); font-size: .86rem; line-height: 1.65; }
+
+/* RUBRIC */
+.rubric { padding: 40px 0 60px; }
+.rubric h2 {
+  font-size: clamp(1.5rem, 3vw, 2.2rem); font-weight: 800;
+  letter-spacing: -0.035em; margin-bottom: 14px; text-align: center;
+}
+.rubric .lead { color: var(--text-2); text-align: center; max-width: 640px; margin: 0 auto 32px; font-size: .92rem; }
+.rubric-grid {
+  display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px;
+}
+@media (max-width: 720px) { .rubric-grid { grid-template-columns: 1fr; } }
+.rubric-card {
+  padding: 18px 20px; border-radius: var(--r-lg);
+  background: var(--surface); border: 1px solid var(--line);
+  display: flex; align-items: center; gap: 14px;
+}
+.rubric-pts {
+  flex-shrink: 0; width: 48px; padding: 6px 0; text-align: center;
+  border-radius: 9px; font-family: 'Geist Mono', monospace;
+  font-weight: 700; font-size: .92rem;
+}
+.rubric-pts.crit { background: rgba(239, 68, 68, .15); color: var(--red); }
+.rubric-pts.high { background: rgba(255, 107, 53, .15); color: var(--acc); }
+.rubric-pts.med { background: rgba(234, 179, 8, .15); color: var(--yellow); }
+.rubric-pts.low { background: rgba(139, 92, 246, .15); color: var(--purple); }
+.rubric-text h5 { font-size: .92rem; font-weight: 700; margin-bottom: 4px; }
+.rubric-text p { font-size: .8rem; color: var(--text-2); line-height: 1.55; }
+
+/* FOOTER */
+footer {
+  border-top: 1px solid var(--line); padding: 36px 0 32px;
+  text-align: center; color: var(--muted); font-size: .85rem;
+  line-height: 1.9;
+}
+footer a {
+  color: var(--text-2); font-weight: 500; text-decoration: none;
+  border-bottom: 1px dashed var(--line-2); transition: all .2s var(--ease);
+}
+footer a:hover { color: var(--acc); border-color: var(--acc); }
+.footer-brand {
+  font-weight: 700; color: var(--text); letter-spacing: -0.02em;
+}
+
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-inner">
+    <a href="#" class="nav-logo">
+      <span class="logo-icon">🛡️</span>
+      <span>MimoShield</span>
+    </a>
+    <div class="nav-actions">
+      <button class="nav-btn" id="langBtn">🌐 ID</button>
+      <button class="nav-btn" id="themeBtn">☀️</button>
+    </div>
+  </div>
+</nav>
+
+<main>
+<section class="hero">
+  <div class="container">
+    <div class="hero-badge"><span data-i18n="badge">100T · LIVE · FREE</span></div>
+    <h1 data-i18n="heroTitle">Find every <span class="grad">forgotten approval</span> draining your wallet</h1>
+    <p class="lead" data-i18n="heroLead">Multi-chain auditor that scans every active token approval, scores risk per spender across 10 signals, and shows you exactly what to revoke. Powered by Xiaomi MiMo V2.5. Free. No signup.</p>
+    <div class="hero-stats">
+      <div class="hero-stat">⚡ <b>5 chains</b><span data-i18n="s1">supported</span></div>
+      <div class="hero-stat">🔍 <b>10 signals</b><span data-i18n="s2">risk model</span></div>
+      <div class="hero-stat">🚫 <b>$2.8B+</b><span data-i18n="s3">drained yearly via approvals</span></div>
+    </div>
+
+    <div class="input-card">
+      <div class="chains" id="chains"></div>
+      <div class="input-row">
+        <input id="addrIn" placeholder="0x... or vitalik.eth" autocomplete="off">
+        <button class="btn-primary" id="scanBtn" data-i18n="scan">Scan wallet</button>
+      </div>
+      <div class="examples">
+        <b data-i18n="tryLbl">Try:</b>
+        <button class="example-btn" data-addr="0xF977814e90dA44bFA03b6295A0616a897441aceC">Binance</button>
+        <button class="example-btn" data-addr="0x47ac0Fb4F2D84898e4D9E7b4DaB3C24507a6D503">Active DeFi</button>
+        <button class="example-btn" data-addr="0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045">vitalik.eth</button>
+      </div>
+      <div class="error" id="errBox"></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="container">
+    <div class="loading" id="loadBox">
+      <div class="loading-dots"><span></span><span></span><span></span></div>
+      <div class="loading-msg" id="loadMsg">Scanning approvals...</div>
+    </div>
+
+    <div class="result" id="resultBox">
+      <div class="summary" id="summary"></div>
+      <div class="score-card" id="scoreCard"></div>
+      <div class="approvals-head">
+        <h3 data-i18n="apprH">Active approvals (worst → best)</h3>
+        <span class="count" id="apprCount">—</span>
+      </div>
+      <div class="approvals" id="approvals"></div>
+      <div class="mimo-insight" id="mimoInsight"></div>
+    </div>
+  </div>
+</section>
+
+<section class="how" id="how">
+  <div class="container">
+    <h2 data-i18n="howH">How MimoShield works</h2>
+    <div class="how-grid">
+      <div class="how-step">
+        <div class="num">01</div>
+        <h4 data-i18n="how1H">Paste wallet</h4>
+        <p data-i18n="how1P">Drop any 0x address or .eth name. Read-only — we never ask for keys or signatures.</p>
+      </div>
+      <div class="how-step">
+        <div class="num">02</div>
+        <h4 data-i18n="how2H">Multi-chain scan</h4>
+        <p data-i18n="how2P">GoPlus Security API surfaces every live token allowance across 5 EVM chains. Free, no key.</p>
+      </div>
+      <div class="how-step">
+        <div class="num">03</div>
+        <h4 data-i18n="how3H">10-signal scoring</h4>
+        <p data-i18n="how3P">Each approval gets weighted scored on amount, age, contract verification, malicious flags, and creator history.</p>
+      </div>
+      <div class="how-step">
+        <div class="num">04</div>
+        <h4 data-i18n="how4H">Revoke instantly</h4>
+        <p data-i18n="how4P">One click deep-links to revoke.cash with the approval pre-filled. You sign in your own wallet.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="rubric">
+  <div class="container">
+    <h2 data-i18n="rubH">10-signal risk rubric</h2>
+    <p class="lead" data-i18n="rubLead">Transparent scoring. Every approval gets points across 4 severity bands. 71+ means revoke immediately.</p>
+    <div class="rubric-grid">
+      <div class="rubric-card"><div class="rubric-pts crit">+40</div><div class="rubric-text"><h5 data-i18n="r1H">Unlimited allowance</h5><p data-i18n="r1P">approved_amount = 2^256-1, the maximum approval — drained in one tx.</p></div></div>
+      <div class="rubric-card"><div class="rubric-pts crit">+40</div><div class="rubric-text"><h5 data-i18n="r2H">Malicious spender</h5><p data-i18n="r2P">GoPlus flagged the spender contract or creator as known malicious / on doubt list.</p></div></div>
+      <div class="rubric-card"><div class="rubric-pts high">+20</div><div class="rubric-text"><h5 data-i18n="r3H">Closed-source</h5><p data-i18n="r3P">Spender contract source not verified on-chain. You cannot audit what it can do.</p></div></div>
+      <div class="rubric-card"><div class="rubric-pts high">+20</div><div class="rubric-text"><h5 data-i18n="r4H">EOA spender</h5><p data-i18n="r4P">Approval went to a regular wallet (not a contract). Almost always phishing.</p></div></div>
+      <div class="rubric-card"><div class="rubric-pts med">+10</div><div class="rubric-text"><h5 data-i18n="r5H">Massively over-funded</h5><p data-i18n="r5P">Allowance exceeds your current balance by 1000× — you forgot to scope it.</p></div></div>
+      <div class="rubric-card"><div class="rubric-pts med">+10</div><div class="rubric-text"><h5 data-i18n="r6H">Aged over 365 days</h5><p data-i18n="r6P">Forgotten approvals are the #1 source of drained wallets per Chainabuse.</p></div></div>
+      <div class="rubric-card"><div class="rubric-pts med">+10</div><div class="rubric-text"><h5 data-i18n="r7H">Risky token</h5><p data-i18n="r7P">Token itself flagged with malicious behavior (honeypot, rebase trap).</p></div></div>
+      <div class="rubric-card"><div class="rubric-pts low">+5</div><div class="rubric-text"><h5 data-i18n="r8H">Fresh contract</h5><p data-i18n="r8P">Spender deployed less than 30 days ago. Track record too thin.</p></div></div>
+      <div class="rubric-card"><div class="rubric-pts low">+5</div><div class="rubric-text"><h5 data-i18n="r9H">Unverified label</h5><p data-i18n="r9P">No trust list, no contract name. Signal of low reputation.</p></div></div>
+      <div class="rubric-card"><div class="rubric-pts low">+5</div><div class="rubric-text"><h5 data-i18n="r10H">Suspicious creator</h5><p data-i18n="r10P">Spender deployer wallet linked to other risky contracts.</p></div></div>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <div class="container">
+    <div><span class="footer-brand">MimoShield</span> · Powered by <a href="https://gopluslabs.io" target="_blank" rel="noopener">GoPlus Security API</a> + <a href="https://text.pollinations.ai" target="_blank" rel="noopener">Pollinations.ai</a></div>
+    <div>Built for <a href="https://100t.xiaomimimo.com/" target="_blank" rel="noopener">Xiaomi MiMo Orbit 100T</a> · <a href="https://github.com/gyoomei/mimoshield" target="_blank" rel="noopener">Source on GitHub</a></div>
+    <div style="margin-top:8px;font-size:.78rem;color:var(--dim)" data-i18n="dis">⚠️ Read-only audit. We never ask for keys or signatures. Revocations happen in your own wallet.</div>
+  </div>
+</footer>
+
+<script src="app.js?v=2"></script>
+</body>
+</html>

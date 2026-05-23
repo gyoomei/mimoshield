@@ -319,7 +319,7 @@ function renderResult(approvals, walletAddr) {
   const tierClass = overallTier.toLowerCase();
   const circ = 2 * Math.PI * 56;
   const dash = (overall / 100) * circ;
-  const ringColor = { DANGER: '#ef4444', RISKY: '#ff6b35', CAUTION: '#eab308', SAFE: '#22c55e' }[overallTier];
+  const ringColor = { DANGER: '#ff5a82', RISKY: '#fa7faa', CAUTION: '#ffb287', SAFE: '#c2ef4e' }[overallTier];
   $('scoreCard').innerHTML = `
     <div class="score-ring" style="color:${ringColor}">
       <svg width="130" height="130">
